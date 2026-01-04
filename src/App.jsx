@@ -48,7 +48,7 @@ const portfolioData = {
       title: "TruthLens - Fake News AI",
       description: "AI-powered hybrid fake news detection and fact check system. Combines a custom Fine-Tuned BERT model, Google Gemini 3.0 Flash for logical reasoning, and Google Fact Check Tools for verification. Built with .NET 8 & Blazor WebAssembly.",
       tags: [".NET Core", "C#", "OCR", "ML","AI","Google"],
-      link: "https://github.com/atilladegirmenci/TruthLens", 
+      link: "https://atilladegirmenci.github.io/TruthLens/", 
       type: "web",
       image: "/images/truthlens.png"
     },
