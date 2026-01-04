@@ -14,7 +14,7 @@ const ProjectCard = ({ project }) => {
         className="h-full"
       >
         {/* KART DIŞ ÇERÇEVE: Rengi #030224ff/60 yapıldı */}
-        <div className="rounded-xl border border-white/5 overflow-hidden shadow-lg h-full flex flex-col group relative hover:shadow-2xl hover:shadow-brand-accent/20 transition-all bg-[#030224ff]/60">
+        <div className="rounded-xl border border-white/5 overflow-hidden shadow-lg h-full flex flex-col group relative hover:shadow-2xl hover:shadow-brand-accent/20 transition-all bg-[#030224ff]/30">
             
             {/* Parlama Efekti */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10"></div>
