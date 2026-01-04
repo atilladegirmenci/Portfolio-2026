@@ -55,7 +55,7 @@ const portfolioData = {
     {
       title: "Smart Summary Assistant",
       description: "A comprehensive media summarization tool that leverages AI to transcribe and summarize content. Users can upload local audio/video files or provide YouTube links to get summaries tailored to their specific needs",
-      tags: [".NET Core", "Groq", "Gemini", "API","LLM"],
+      tags: [".NET Core", "C#","Groq", "Gemini", "API","LLM"],
       link: "https://atilladegirmenci.github.io/SmartSummaryAssistant/",
       type: "web",
       image: "/images/smartsummary.png"
@@ -63,7 +63,7 @@ const portfolioData = {
     {
       title: "A Hyper-Casual Game: Tubes",
       description: "A color-based tray filling puzzle game built with Unity. Tubes are queued, matched by color, and automatically placed into the correct trays.",
-      tags: ["Unity 3D", "C#", "HLSL", "Game Design"],
+      tags: ["Unity", "C#", "Puzzle","Casual", "Game Design"],
       link: "https://ati555.itch.io/tubes-a-puzzle-game",
       type: "game",
       image: "/images/game.png"
