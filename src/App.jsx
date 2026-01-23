@@ -118,6 +118,7 @@ const sections = ["about", "education", "skills", "projects", "contact-me"];
 function App() {
   const [activeSection, setActiveSection] = useState("about");
   const [copied, setCopied] = useState(false);
+  const [visitCount, setVisitCount] = useState(0);
 
   useEffect(() => {
     const observerOptions = {
@@ -140,6 +141,28 @@ function App() {
     });
 
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const namespace = "atilladegirmenci.github.io";
+    const key = "portfolio_visits";
+
+    const hasVisited = localStorage.getItem("hasVisited");
+
+    if (!hasVisited) {
+      fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setVisitCount(data.value);
+          localStorage.setItem("hasVisited", "true");
+        })
+        .catch((err) => console.error("Sayaç artırma hatası:", err));
+    } else {
+      fetch(`https://api.countapi.xyz/get/${namespace}/${key}`)
+        .then((res) => res.json())
+        .then((data) => setVisitCount(data.value))
+        .catch((err) => console.error("Sayaç okuma hatası:", err));
+    }
   }, []);
 
   const handleCopyEmail = () => {
@@ -486,6 +509,10 @@ function App() {
               {portfolioData.name}
             </span>{" "}
             © {new Date().getFullYear()}
+          </p>
+          <p className="text-xs opacity-50 font-mono">
+            Total Unique Visits:{" "}
+            <span className="text-brand-accent">{visitCount}</span>
           </p>
         </footer>
       </div>
