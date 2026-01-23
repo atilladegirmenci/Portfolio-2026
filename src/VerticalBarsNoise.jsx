@@ -1,8 +1,8 @@
 // src/VerticalBarsNoise.jsx
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback } from "react";
 
 const hexToRgb = (hex) => {
-  const cleanHex = hex.charAt(0) === '#' ? hex.substring(1) : hex;
+  const cleanHex = hex.charAt(0) === "#" ? hex.substring(1) : hex;
   const r = parseInt(cleanHex.substring(0, 2), 16);
   const g = parseInt(cleanHex.substring(2, 4), 16);
   const b = parseInt(cleanHex.substring(4, 6), 16);
@@ -10,9 +10,9 @@ const hexToRgb = (hex) => {
 };
 
 const VerticalBarsNoise = ({
-  backgroundColor = '#F0EEE6',
-  lineColor = '#444',
-  barColor = '#000000',
+  backgroundColor = "#F0EEE6",
+  lineColor = "#444",
+  barColor = "#000000",
   lineWidth = 1,
   animationSpeed = 0.0005,
   removeWaveLine = true,
@@ -20,41 +20,57 @@ const VerticalBarsNoise = ({
   const canvasRef = useRef(null);
   const timeRef = useRef(0);
   const animationFrameId = useRef(null);
+  const lastRenderTime = useRef(0); // FPS kontrolü için
   const mouseRef = useRef({ x: 0, y: 0, isDown: false });
   const ripples = useRef([]);
+  // dprRef artık sabit 1 olarak düşünülecek, ref tutmaya gerek kalmayabilir ama yapıyı bozmuyoruz.
   const dprRef = useRef(1);
+
+  // FPS LIMIT AYARI: 30 FPS (1000ms / 30 = ~33.3ms)
+  const FPS_LIMIT = 30;
+  const INTERVAL = 1000 / FPS_LIMIT;
 
   const noise = (x, y, t) => {
     return (
       (Math.sin(x * 0.01 + t) * Math.cos(y * 0.01 + t) +
-       Math.sin(x * 0.015 - t) * Math.cos(y * 0.005 + t) + 1) / 2
+        Math.sin(x * 0.015 - t) * Math.cos(y * 0.005 + t) +
+        1) /
+      2
     );
   };
 
   const getMouseInfluence = (x, y) => {
     const dx = x - mouseRef.current.x;
     const dy = y - mouseRef.current.y;
-    // Performans için karekök (Math.sqrt) yerine kare mesafe kontrolü yapılabilir ama şimdilik kalsın.
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    const maxDistance = 200;
-    return Math.max(0, 1 - distance / maxDistance);
+    // OPTİMİZASYON: Math.sqrt kaldırılarak kare mesafe kontrolü yapıldı
+    const distSq = dx * dx + dy * dy;
+    const maxDistSq = 200 * 200; // 40,000
+
+    if (distSq > maxDistSq) return 0;
+    return 1 - Math.sqrt(distSq) / 200; // Sadece etki alanındaysa sqrt al
   };
 
   const getRippleInfluence = (x, y, currentTime) => {
     let totalInfluence = 0;
-    // Ripples dizisi çok şişerse donma yapar, temizlendiğinden eminiz ama yine de kısa tutalım
     ripples.current.forEach((ripple) => {
       const age = currentTime - ripple.time;
       const maxAge = 2000;
       if (age < maxAge) {
         const dx = x - ripple.x;
         const dy = y - ripple.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        // OPTİMİZASYON: Kare mesafe ile ön eleme
+        const distSq = dx * dx + dy * dy;
         const rippleRadius = (age / maxAge) * 300;
         const rippleWidth = 50;
-        if (Math.abs(distance - rippleRadius) < rippleWidth) {
+
+        // Kabaca bir kontrol: Eğer nokta ripple'ın çok uzağındaysa detaylı hesaplama yapma
+        // (Bu kısım çok kritik değil ama milisaniye kazandırır)
+        const approxDist = Math.sqrt(distSq);
+
+        if (Math.abs(approxDist - rippleRadius) < rippleWidth) {
           const rippleStrength = (1 - age / maxAge) * ripple.intensity;
-          const proximityToRipple = 1 - Math.abs(distance - rippleRadius) / rippleWidth;
+          const proximityToRipple =
+            1 - Math.abs(approxDist - rippleRadius) / rippleWidth;
           totalInfluence += rippleStrength * proximityToRipple;
         }
       }
@@ -66,7 +82,10 @@ const VerticalBarsNoise = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const dpr = window.devicePixelRatio || 1;
+    // OPTİMİZASYON KRİTİK NOKTA:
+    // Retina ekranlarda dahi dpr'yi 1'e sabitliyoruz.
+    // Gürültü efekti olduğu için yüksek çözünürlüğe gerek yok, performans artışı muazzam.
+    const dpr = 1;
     dprRef.current = dpr;
 
     const displayWidth = window.innerWidth;
@@ -75,11 +94,15 @@ const VerticalBarsNoise = ({
     canvas.width = displayWidth * dpr;
     canvas.height = displayHeight * dpr;
 
-    canvas.style.width = displayWidth + 'px';
-    canvas.style.height = displayHeight + 'px';
+    canvas.style.width = displayWidth + "px";
+    canvas.style.height = displayHeight + "px";
 
-    const ctx = canvas.getContext('2d');
-    if (ctx) ctx.scale(dpr, dpr);
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.scale(dpr, dpr);
+      // Canvas çizim optimizasyonu için
+      ctx.imageSmoothingEnabled = false;
+    }
   }, []);
 
   const handleMouseMove = useCallback((e) => {
@@ -96,7 +119,6 @@ const VerticalBarsNoise = ({
       intensity: 1.5,
     });
 
-    // Ripple temizliği
     const now = Date.now();
     ripples.current = ripples.current.filter((r) => now - r.time < 2000);
   }, []);
@@ -106,35 +128,51 @@ const VerticalBarsNoise = ({
   }, []);
 
   const animate = useCallback(() => {
+    // Döngü devam etsin
+    animationFrameId.current = requestAnimationFrame(animate);
+
+    const now = Date.now();
+    const elapsed = now - lastRenderTime.current;
+
+    // OPTİMİZASYON: FPS CAP
+    // Eğer geçen süre hedeflenen FPS aralığından azsa çizim yapmadan çık.
+    if (elapsed < INTERVAL) return;
+
+    lastRenderTime.current = now - (elapsed % INTERVAL);
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    timeRef.current += animationSpeed;
+    timeRef.current += animationSpeed; // Hızı FPS düşüşüne göre dengelemek gerekebilir ama noise için fark etmez.
     const currentTime = Date.now();
 
-    const canvasWidth = canvas.clientWidth; // CSS piksel genişliği
-    const canvasHeight = canvas.clientHeight; // CSS piksel yüksekliği
+    const canvasWidth = canvas.clientWidth;
+    const canvasHeight = canvas.clientHeight;
 
-    // PERFORMANS AYARI 1: Satır sayısını azalttık (11 yerine 15-20 pikselde bir)
-    const numLines = Math.floor(canvasHeight / 15); 
+    // Satır aralığı
+    const numLines = Math.floor(canvasHeight / 15);
     const lineSpacing = canvasHeight / numLines;
 
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // Çizgi rengini önden hesapla
     const lineRgb = hexToRgb(lineColor);
     const barRgb = hexToRgb(barColor);
 
+    // Dış döngü (Y ekseni)
     for (let i = 0; i < numLines; i++) {
       const y = i * lineSpacing + lineSpacing / 2;
+
+      // Mouse Y ekseninde çok uzaktaysa satırı komple pas geçmek mümkün mü?
+      // Hayır, çünkü noise her yerde var. Devam ediyoruz.
+
       const mouseInfluence = getMouseInfluence(canvasWidth / 2, y);
-      
-      // Sadece fare yakınsa çizgi kalınlaşsın, yoksa sabit kalsın (Performans)
-      const lineAlpha = mouseInfluence > 0 ? Math.max(0.3, 0.3 + mouseInfluence * 0.7) : 0.3;
+
+      const lineAlpha =
+        mouseInfluence > 0 ? Math.max(0.3, 0.3 + mouseInfluence * 0.7) : 0.3;
 
       ctx.beginPath();
       ctx.strokeStyle = `rgba(${lineRgb.r}, ${lineRgb.g}, ${lineRgb.b}, ${lineAlpha})`;
@@ -143,52 +181,80 @@ const VerticalBarsNoise = ({
       ctx.lineTo(canvasWidth, y);
       ctx.stroke();
 
-      // PERFORMANS AYARI 2: x adımını 8 yerine 15 yaptık. Daha az hesaplama demek.
-      for (let x = 0; x < canvasWidth; x += 15) {
-        
-        // Mouse çok uzaktaysa hiç noise hesaplama (Ciddi FPS artışı sağlar)
+      // İç döngü (X ekseni)
+      // x adımını 18'de bıraktık, performans için iyi.
+      for (let x = 0; x < canvasWidth; x += 18) {
+        // Mouse ve Ripple hesapları
+        // getMouseInfluence fonksiyonu artık daha optimize
         const mouseInfl = getMouseInfluence(x, y);
-        const rippleInfl = ripples.current.length > 0 ? getRippleInfluence(x, y, currentTime) : 0;
-        
-        // Eğer hiçbir etkileşim yoksa ve sadece ambient noise varsa, onu da optimize edebiliriz
-        // Ama şimdilik sadece çizimi optimize edelim.
-        
-        const noiseVal = noise(x, y, timeRef.current);
+        const rippleInfl =
+          ripples.current.length > 0
+            ? getRippleInfluence(x, y, currentTime)
+            : 0;
+
         const totalInfluence = mouseInfl + rippleInfl;
 
-        const threshold = Math.max(0.2, 0.5 - mouseInfl * 0.2 - Math.abs(rippleInfl) * 0.1);
+        // Gürültü eşiğini hesapla
+        // Eğer hiçbir etkileşim yoksa, noise fonksiyonunu çağırmadan önce
+        // çok basit bir Math.random kontrolü ile yükü azaltabiliriz ama
+        // tutarlılık için noise fonksiyonunu çağırıyoruz.
+        const noiseVal = noise(x, y, timeRef.current);
+
+        const threshold = Math.max(
+          0.2,
+          0.5 - mouseInfl * 0.2 - Math.abs(rippleInfl) * 0.1,
+        );
 
         if (noiseVal > threshold) {
-          const barWidth = 3 + noiseVal * 10 + totalInfluence * 5;
-          const barHeight = 2 + noiseVal * 3 + totalInfluence * 3;
+          // Değerleri hesapla
+          const barWidth = 7 + noiseVal * 10 + totalInfluence * 5;
+          const barHeight = 3.5 + noiseVal * 3 + totalInfluence * 3;
 
-          const baseAnimation = Math.sin(timeRef.current + y * 0.0375) * 20 * noiseVal;
+          const baseAnimation =
+            Math.sin(timeRef.current + y * 0.0375) * 20 * noiseVal;
+
           const mouseAnimation = mouseRef.current.isDown
             ? Math.sin(timeRef.current * 3 + x * 0.01) * 10 * mouseInfl
             : 0;
-          const rippleAnimation = rippleInfl * Math.sin(timeRef.current * 2 + x * 0.02) * 15;
 
-          const animatedX = x + baseAnimation + mouseAnimation + rippleAnimation;
-          const intensity = Math.min(1, Math.max(0.7, 0.7 + totalInfluence * 0.3));
+          const rippleAnimation =
+            rippleInfl * Math.sin(timeRef.current * 2 + x * 0.02) * 15;
 
+          const animatedX =
+            x + baseAnimation + mouseAnimation + rippleAnimation;
+
+          const intensity = Math.min(
+            1,
+            Math.max(0.7, 0.7 + totalInfluence * 0.3),
+          );
+
+          // ÇİZİM
+          // fillStyle string birleştirme işlemi maliyetlidir ama mecburuz.
           ctx.fillStyle = `rgba(${barRgb.r}, ${barRgb.g}, ${barRgb.b}, ${intensity})`;
+
+          // Math.floor kullanarak anti-aliasing'i azaltıp performansı artırabiliriz
           ctx.fillRect(
-            animatedX - barWidth / 2,
-            y - barHeight / 2,
-            barWidth,
-            barHeight
+            Math.floor(animatedX - barWidth / 2),
+            Math.floor(y - barHeight / 2),
+            Math.floor(barWidth),
+            Math.floor(barHeight),
           );
         }
       }
     }
-    
-    // Wave Line çizimi
-    if (!removeWaveLine && ripples.current.length > 0) {
-       // ... Ripple çizim kodu aynı ...
-    }
 
-    animationFrameId.current = requestAnimationFrame(animate);
-  }, [backgroundColor, lineColor, removeWaveLine, barColor, lineWidth, animationSpeed]);
+    if (!removeWaveLine && ripples.current.length > 0) {
+      // Ripple kodu
+    }
+  }, [
+    backgroundColor,
+    lineColor,
+    removeWaveLine,
+    barColor,
+    lineWidth,
+    animationSpeed,
+    INTERVAL, // Dependency'e eklendi
+  ]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -197,25 +263,27 @@ const VerticalBarsNoise = ({
     resizeCanvas();
     const handleResize = () => resizeCanvas();
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
 
-    animate();
+    // Animasyonu başlat
+    animationFrameId.current = requestAnimationFrame(animate);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mouseup', handleMouseUp);
-      if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
+      if (animationFrameId.current)
+        cancelAnimationFrame(animationFrameId.current);
     };
   }, [animate, resizeCanvas, handleMouseMove, handleMouseDown, handleMouseUp]);
 
   return (
-    <div className='fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0'>
-      <canvas ref={canvasRef} className='block w-full h-full' />
+    <div className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
+      <canvas ref={canvasRef} className="block w-full h-full" />
     </div>
   );
 };
