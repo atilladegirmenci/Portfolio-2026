@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 body {
-  background-color: #121212; /* Yeni Spotify Grisi Zemin */
-  color: #7e22ce;            /* Yeni Koyu Mor varsayılan */
+  background-color: #121212; 
+  color: #7e22ce;            
 }
 
-/* Scrollbar Tasarımı */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -19,5 +19,5 @@ body {
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #7e22ce; /* Yeni koyu mor */
+  background: #7e22ce; 
 }

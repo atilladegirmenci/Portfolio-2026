@@ -8,11 +8,11 @@ export default {
     extend: {
       colors: {
         brand: {
-          base: "#121212",      // Ana Arka Plan: Spotify Koyu Grisi
+          base: "#121212",      // Ana Arka Plan: 
           card: "#181818",      // Kartlar: Bir tık daha açık gri (derinlik için)
           secondary: "#282828", // İkincil/Hover renkleri
-          muted: "#b3b3b3",     // Silik yazılar
-          accent: "#7e22ce",    // Vurgu: Daha koyu, tok bir mor
+          muted: "#8193a5",     // Silik yazılar
+          accent: "#557C99 ",    // Vurgu
         }
       },
       fontFamily: {

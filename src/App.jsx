@@ -1,10 +1,9 @@
 // src/App.jsx
 import React, { useState, useEffect } from "react";
 import ProjectCard from "./ProjectCard";
-import VerticalBarsNoise from "./VerticalBarsNoise";
+import MicroSlats from "./MicroSlats";
 
 import {
-  FaGamepad,
   FaCode,
   FaDatabase,
   FaJava,
@@ -12,22 +11,19 @@ import {
   FaHtml5,
   FaCss3Alt,
   FaGithub,
-  FaItchIo,
   FaGitAlt,
   FaLinkedin,
   FaInstagram,
   FaEnvelope,
   FaCopy,
   FaCheck,
+  FaAws
 } from "react-icons/fa";
 import { TbBrandCSharp, TbBrandCpp } from "react-icons/tb";
-import { BiLogoUnity } from "react-icons/bi";
 import {
   SiHuggingface,
-  SiGooglegemini,
-  SiRapid,
-  SiGithub,
   SiPostman,
+  SiGooglegemini
 } from "react-icons/si";
 import { VscAzure } from "react-icons/vsc";
 
@@ -37,26 +33,37 @@ const portfolioData = {
   location: "Istanbul, Turkey",
   email: "atilladegirmenci04@gmail.com",
   about:
-    "As a Senior Computer Engineering student, I bridge the gap between creative game mechanics and robust software architecture. My technical journey is defined by a deep focus on the .NET ecosystem (C#) and Game Development with Unity. Beyond just writing code, I am passionate about understanding the 'why' behind architectural decisions.",
+    "I develop backend systems, RESTful APIs, and cloud-based solutions using C# and .NET. I have hands-on experience with AWS serverless architectures and integrating AI tools into applications. I value clean architecture principles and enjoy turning complex problems into effective software solutions.",
   education: {
     school: "Düzce University",
     department: "Computer Engineering",
-    date: "2022 - Current",
+    date: "7/2022 - 10/2026",
     website: "https://duzce.edu.tr/",
+  },
+  experience: {
+    role: "Backend Developer Intern",
+    company: "EPAM Systems Turkiye",
+    location: "Istanbul, Turkiye",
+    date: "07/2026 – 09/2026",
+    website: "https://www.epam.com/",
+    description: [
+      "Actively contributed to backend development for large-scale software projects in collaboration with international mentors and engineers.",
+      "Designed and developed production-grade, cloud-based, and scalable microservices using various AWS serverless services.",
+      "Collaborated with multinational teams in an Agile environment, conducting all technical meetings and written communication entirely in English."
+    ]
   },
   techStack: [
     { name: "C#", icon: <TbBrandCSharp />, color: "#239120" },
     { name: ".NET", icon: <FaCode />, color: "#512BD4" },
-    { name: "Unity", icon: <BiLogoUnity />, color: "#FFFFFF" },
+    { name: "AWS", icon: <FaAws />, color: "#FF9900" },
     { name: "Azure", icon: <VscAzure />, color: "#0078D4" },
     { name: "Hugging Face", icon: <SiHuggingface />, color: "#FFD21E" },
     { name: "Postman", icon: <SiPostman />, color: "#FF6C37" },
     { name: "Java", icon: <FaJava />, color: "#007396" },
     { name: "Python", icon: <FaPython />, color: "#3776AB" },
-    { name: "GitHub", icon: <SiGithub />, color: "#FFFFFF" },
-    { name: "RapidAPI", icon: <SiRapid />, color: "#0055DA" },
-    { name: "C++", icon: <TbBrandCpp />, color: "#00599C" },
-    { name: "SQL", icon: <FaDatabase />, color: "#CC2927" },
+    { name: "GitHub", icon: <FaGithub />, color: "#FFFFFF" },
+    { name: "AI Integration & Dev", icon: <SiGooglegemini />, color: "#8E75B2" },
+    { name: "SQL & Databases", icon: <FaDatabase />, color: "#CC2927" },
     { name: "Git", icon: <FaGitAlt />, color: "#F05032" },
     { name: "HTML5", icon: <FaHtml5 />, color: "#E34F26" },
     { name: "CSS3", icon: <FaCss3Alt />, color: "#1572B6" },
@@ -80,40 +87,22 @@ const portfolioData = {
       type: "web",
       image: "/images/smartsummary.png",
     },
-    {
-      title: "A Hyper-Casual Game: Tubes",
-      description:
-        "A color-based tray filling puzzle game built with Unity. Tubes are queued, matched by color, and automatically placed into the correct trays.",
-      tags: ["Unity", "C#", "Puzzle", "Casual", "Game Design"],
-      link: "https://ati555.itch.io/tubes-a-puzzle-game",
-      type: "game",
-      image: "/images/game.png",
-    },
-    {
-      title: "A Hyper-Casual Game: Match Blocks",
-      description:
-        "Match colorful cubes and pop them to rack up points in this vibrant arcade puzzle game. Use your moves wisely to get the highest score and enjoy the colorful, polished visuals with every blast.",
-      tags: ["Unity", "C#", "Puzzle", "Casual", "Game Design"],
-      link: "https://ati555.itch.io/match-blocks",
-      type: "game",
-      image: "/images/game 2.png",
-    },
   ],
   links: {
     github: "https://github.com/atilladegirmenci",
-    itchio: "https://ati555.itch.io",
     linkedin: "https://www.linkedin.com/in/atilla-de%C4%9Firmenci-74b243254/",
     instagram: "https://www.instagram.com/atilla__d/",
   },
 };
 
-// Statik hesaplamalar component dışına alındı (Performans artışı)
+// Static calculations moved outside the component for performance optimization
 const halfLength = Math.ceil(portfolioData.techStack.length / 2);
 const row1 = portfolioData.techStack.slice(0, halfLength);
 const row2 = portfolioData.techStack.slice(halfLength);
 const infiniteRow1 = [...row1, ...row1, ...row1];
 const infiniteRow2 = [...row2, ...row2, ...row2];
-const sections = ["about", "education", "skills", "projects", "contact-me"];
+// Added 'experience' to the sections array so it appears in the navbar
+const sections = ["about", "experience", "education", "skills", "projects", "contact-me"];
 
 function App() {
   const [activeSection, setActiveSection] = useState("about");
@@ -156,12 +145,12 @@ function App() {
           setVisitCount(data.value);
           localStorage.setItem("hasVisited", "true");
         })
-        .catch((err) => console.error("Sayaç artırma hatası:", err));
+        .catch((err) => console.error("Increment counter error:", err));
     } else {
       fetch(`https://api.countapi.xyz/get/${namespace}/${key}`)
         .then((res) => res.json())
         .then((data) => setVisitCount(data.value))
-        .catch((err) => console.error("Sayaç okuma hatası:", err));
+        .catch((err) => console.error("Read counter error:", err));
     }
   }, []);
 
@@ -174,14 +163,35 @@ function App() {
   return (
     <div className="min-h-screen font-sans selection:bg-brand-muted selection:text-brand-accent flex flex-col relative">
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,_var(--tw-gradient-stops))] from-[#334155] via-[#0f172a] to-[#000000]"></div>
-        <div className="absolute inset-0 mix-blend-multiply opacity-40">
-          <VerticalBarsNoise
-            backgroundColor="#ffffff"
-            lineColor="#000000"
-            barColor="#000000"
-            animationSpeed={0.0005}
-            lineWidth={1}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,_var(--tw-gradient-stops))] from-[#11141C] via-[#090d16] to-[#000000]"></div>
+        <div className="absolute inset-0 opacity-80">
+          <MicroSlats
+            preset="tide"
+            color="#47018a"
+            glintColor="#708090 "
+            backgroundColor="transparent"
+            slatWidth={7}
+            slatHeight={25}
+            gap={4}
+            roundness={1}
+            interactive
+            cursorStrength={0.5}
+            cursorSize={40}
+            swirl={0}
+            trail={1.1}
+            lean={0}
+            intro ={false}
+            scale={1.3}
+            speed={0.35}
+            direction={262}
+            chop={0.2}
+            stretch={0.12}
+            glint={0.4}
+            contrast={1.6}
+            perspective={0.5}
+            fog={0.4}
+            introDuration={1.2}
+            paused={false}
           />
         </div>
       </div>
@@ -244,7 +254,7 @@ function App() {
 
             <div className="flex-1 md:basis-1/3 flex flex-col items-center gap-6 shrink-0 group cursor-default">
               <div className="relative">
-                <div className="absolute -inset-2 bg-gradient-to-tr from-brand-card via-brand-accent to-brand-muted rounded-full blur-md opacity-40 group-hover:opacity-70 transition duration-1000"></div>
+               <div className="absolute -inset-2 bg-gradient-to-tr from-white/10 via-white/40 to-transparent rounded-full blur-lg opacity-40 group-hover:opacity-80 transition duration-1000"></div>
                 <img
                   src="/images/me.jpeg"
                   alt="Profile"
@@ -256,7 +266,7 @@ function App() {
                 />
               </div>
               <a
-                href="/cv.pdf"
+                href="/CV_EN_Atilla_Degirmenci.pdf"
                 download="Atilla_Degirmenci_CV.pdf"
                 className="px-8 py-3 bg-[#060340]/30 backdrop-blur-md border border-white/10 text-white font-bold rounded-lg hover:bg-brand-accent hover:text-white hover:border-brand-accent hover:scale-105 transition-all flex items-center gap-2 shadow-lg shadow-brand-accent/10"
               >
@@ -265,12 +275,49 @@ function App() {
             </div>
           </header>
 
+          <section id="experience" className="scroll-mt-24">
+            <h3 className="text-2xl font-bold mb-8 flex items-center gap-3 text-brand-accent">
+              <span className="w-8 h-1 bg-brand-accent rounded-full"></span>
+              Work Experience
+            </h3>
+            <div className="relative rounded-xl border border-slate-800 overflow-hidden shadow-xl p-8 md:p-10 group bg-slate-950/60 backdrop-blur-xl hover:border-slate-700 hover:shadow-brand-accent/20 hover:shadow-2xl transition-all duration-300">
+             <div className="absolute top-0 right-0 w-64 h-64 bg-brand-secondary/30 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none group-hover:bg-brand-secondary/50 transition-colors duration-500"></div>
+              <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
+                <div>
+                  <div className="text-brand-muted font-bold text-xs mb-2 uppercase tracking-widest opacity-60">
+                    Internship
+                  </div>
+                  <h4 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                    {portfolioData.experience.role}
+                  </h4>
+                  <a
+                    href={portfolioData.experience.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-accent hover:text-white transition-colors text-lg flex items-center gap-2"
+                  >
+                    {portfolioData.experience.company} ({portfolioData.experience.location})
+                    <span className="text-xs opacity-50">↗</span>
+                  </a>
+                </div>
+                <div className="px-4 py-2 rounded-full border border-white/10 bg-black/30 text-brand-muted text-sm font-mono backdrop-blur-md">
+                  {portfolioData.experience.date}
+                </div>
+              </div>
+              <ul className="relative z-10 space-y-3 text-brand-muted text-base leading-relaxed list-disc list-inside">
+                {portfolioData.experience.description.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </section>
+
           <section id="education" className="scroll-mt-24">
             <h3 className="text-2xl font-bold mb-8 flex items-center gap-3 text-brand-accent">
               <span className="w-8 h-1 bg-brand-accent rounded-full"></span>
               Education
             </h3>
-            <div className="relative rounded-xl border border-white/5 overflow-hidden shadow-lg p-8 md:p-10 group bg-[#060340]/30 backdrop-blur-xl hover:shadow-brand-accent/20 hover:shadow-2xl transition-all duration-300">
+             <div className="relative rounded-xl border border-slate-800 overflow-hidden shadow-xl p-8 md:p-10 group bg-slate-950/60 backdrop-blur-xl hover:border-slate-700 hover:shadow-brand-accent/20 hover:shadow-2xl transition-all duration-300">
               <div className="absolute top-0 right-0 w-64 h-64 bg-brand-secondary/30 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none group-hover:bg-brand-secondary/50 transition-colors duration-500"></div>
               <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
@@ -295,7 +342,7 @@ function App() {
                     {portfolioData.education.date}
                   </div>
                   <div className="px-4 py-2 rounded-full border border-brand-accent/30 bg-brand-accent/10 text-brand-accent text-sm font-bold backdrop-blur-md shadow-[0_0_15px_rgba(126,34,206,0.2)]">
-                    GPA: 3.18
+                    GPA: 3.24
                   </div>
                 </div>
               </div>
@@ -375,7 +422,7 @@ function App() {
             <div className="flex justify-between items-end mb-8">
               <h3 className="text-2xl font-bold text-brand-accent flex items-center gap-3">
                 <span className="w-8 h-1 bg-brand-accent rounded-full"></span>
-                Projects
+                Personal Projects
               </h3>
               <div className="flex items-center gap-4 text-brand-muted">
                 <span className="text-sm font-medium hidden sm:inline">
@@ -390,15 +437,6 @@ function App() {
                     title="GitHub"
                   >
                     <FaGithub />
-                  </a>
-                  <a
-                    href={portfolioData.links.itchio}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-2xl hover:text-brand-accent transition-colors hover:scale-110 duration-200"
-                    title="Itch.io"
-                  >
-                    <FaItchIo />
                   </a>
                 </div>
               </div>
@@ -417,14 +455,14 @@ function App() {
               Contact Me
             </h3>
 
-            <div className="rounded-xl border border-white/5 overflow-hidden shadow-lg p-12 text-center relative bg-[#060340]/30 backdrop-blur-xl group hover:shadow-brand-accent/20 hover:shadow-2xl transition-all duration-300">
+            <div className="rounded-xl border border-slate-800 overflow-hidden shadow-xl p-12 text-center relative bg-slate-950/60 backdrop-blur-xl group hover:border-slate-700 hover:shadow-brand-accent/20 hover:shadow-2xl transition-all duration-300">
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-1/2 bg-brand-secondary/30 rounded-full blur-[100px] pointer-events-none group-hover:bg-brand-secondary/50 transition-colors duration-500"></div>
 
               <h4 className="text-2xl font-bold text-white mb-4 relative z-10">
                 Let's Work Together
               </h4>
               <p className="text-brand-muted max-w-xl mx-auto mb-10 opacity-80 relative z-10">
-                I'm currently available for internships and freelance projects.
+                I am currently open to new career opportunities in backend engineering and software development.
               </p>
 
               <div className="mb-10 relative z-10 flex flex-col items-center gap-2">
@@ -480,15 +518,6 @@ function App() {
                   <FaGithub />
                 </a>
                 <a
-                  href={portfolioData.links.itchio}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-4xl text-brand-muted hover:text-[#FA5C5C] hover:scale-110 transition-all duration-300 drop-shadow-lg"
-                  title="Itch.io"
-                >
-                  <FaItchIo />
-                </a>
-                <a
                   href={portfolioData.links.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -509,10 +538,6 @@ function App() {
               {portfolioData.name}
             </span>{" "}
             © {new Date().getFullYear()}
-          </p>
-          <p className="text-xs opacity-50 font-mono">
-            Total Unique Visits:{" "}
-            <span className="text-brand-accent">{visitCount}</span>
           </p>
         </footer>
       </div>
