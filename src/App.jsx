@@ -266,7 +266,7 @@ function App() {
                 />
               </div>
               <a
-                href="/CV_EN_Atilla_Degirmenci.pdf"
+                href="./cv.pdf"
                 download="Atilla_Degirmenci_CV.pdf"
                 className="px-8 py-3 bg-[#060340]/30 backdrop-blur-md border border-white/10 text-white font-bold rounded-lg hover:bg-brand-accent hover:text-white hover:border-brand-accent hover:scale-105 transition-all flex items-center gap-2 shadow-lg shadow-brand-accent/10"
               >
